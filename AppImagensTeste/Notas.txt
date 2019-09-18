@@ -1,0 +1,74 @@
+﻿ public void Recorta(int Width, int Height, int X, int Y, string url, string novaImagem = "")
+        {
+            WebClient wc = new WebClient();
+            byte[] bytes = wc.DownloadData(url);
+            MemoryStream msimg = new MemoryStream(bytes);
+            using (Image OriginalImage = Image.FromStream(msimg))
+            {
+                if (Width <= 0 || Height <= 0)
+                {
+                    Width = OriginalImage.Width;
+                    Height = OriginalImage.Height;
+                }
+                using (Bitmap bmp = new Bitmap(Width, Height))
+                {
+                    bmp.SetResolution(OriginalImage.HorizontalResolution, OriginalImage.VerticalResolution);
+                    using (Graphics Graphic = Graphics.FromImage(bmp))
+                    {
+                        Graphic.SmoothingMode = SmoothingMode.AntiAlias;
+                        Graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        Graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        Graphic.DrawImage(OriginalImage, new Rectangle(0, 0, Width, Height), X, Y, Width, Height, GraphicsUnit.Pixel);
+                        MemoryStream ms = new MemoryStream();
+                        bmp.Save(ms, OriginalImage.RawFormat);
+                        SalvarNovaImagem(ms.GetBuffer(), novaImagem);
+                        bmp.Dispose();
+                    }
+                }
+            }
+        }
+        public void SalvarNovaImagem(byte[] imagemRecortada, string novaImagem)
+        {
+            using (MemoryStream ms = new MemoryStream(imagemRecortada, 0, imagemRecortada.Length))
+            {
+                ms.Write(imagemRecortada, 0, imagemRecortada.Length);
+                using (Image CroppedImage = Image.FromStream(ms, true))
+                {
+                    CroppedImage.Save(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, novaImagem), CroppedImage.RawFormat);
+                }
+            }
+        }
+        public void Redimensiona(int largura, string original, string novaImagem = "")
+        {
+            string Img = original;
+
+            var arquivoJpg = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Img));
+            Image imagemTemp;
+            Image arquivo = Image.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Img));
+            imagemTemp = new Bitmap(arquivo, new Size(largura, ((arquivoJpg.Height * largura) / arquivoJpg.Width)));
+            arquivoJpg.Dispose();
+            arquivo.Dispose();
+            new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Img)).Delete();
+            imagemTemp.Save(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, novaImagem));
+            imagemTemp.Dispose();
+        }
+        public static CloudStorageAccount GetConnectionString()
+        {
+            string blobName = "ottvsimg";
+            string blobKey = "Ya261DzuxU24pu24n4CFMp8zLdzD+nqWMhXvda33RwNLTWTA+QHZ4pNmNx3+ceWsaTuEnmB10kCXnI+Uv/FWWg==";
+            string connectionString = string.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}", blobName, blobKey);
+            return CloudStorageAccount.Parse(connectionString);
+        }
+        public void sendToBlob(string localOrigem, string blobDestino, string containerBlob = "cov")
+        {
+            CloudStorageAccount cloudStorageAccount = GetConnectionString();
+            CloudBlobClient cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
+            CloudBlobContainer cloudBlobContainer = cloudBlobClient.GetContainerReference(containerBlob);
+            CloudBlockBlob blockBlob = cloudBlobContainer.GetBlockBlobReference(blobDestino);
+            blockBlob.Properties.ContentType = "image/jpg";
+            using (var fileStream = System.IO.File.OpenRead(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, localOrigem)))
+            {
+                blockBlob.UploadFromStream(fileStream);
+            }
+        }
+        

@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AppImagensTeste.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SQLConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Server=tcp:sandbox01.database.windows.net,1433;Initial Catalog=sandbox;Persist Security Info=False;User</Value>
+    </Setting>
+    <Setting Name="BlobConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">DefaultEndpointsProtocol=https;AccountName=cs2f2fa088b7edfx4579xb65;AccountKey=7pBk9brJlUj2mmDOyesFhPLkymjv2DGYSCvV8OH5DeKUBAnLihVDDqbIzyFgkRABhdo/xthfP5CfZfDhPlFc9Q==;EndpointSuffix=core.windows.net</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
